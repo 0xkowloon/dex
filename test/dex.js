@@ -5,6 +5,11 @@ const Rep = artifacts.require('mocks/Rep.sol');
 const Zrx = artifacts.require('mocks/Zrx.sol');
 const Dex = artifacts.require('Dex.sol');
 
+const SIDE = {
+  BUY: 0,
+  SELL: 1
+};
+
 contract('Dex', (accounts) => {
   let dai, bat, rep, zrx, dex;
   const [trader1, trader2] = [accounts[1], accounts[2]];
@@ -78,5 +83,42 @@ contract('Dex', (accounts) => {
       dex.withdraw(web3.utils.toWei('1000'), DAI, { from: trader1 }),
       'balance too low',
     )
+  });
+
+  it('should create limit order', async () => {
+    const amount = web3.utils.toWei('10');
+    await dex.deposit(web3.utils.toWei('100'), DAI, { from: trader1 });
+    await dex.createLimitOrder(REP, amount, 10, SIDE.BUY, { from: trader1 });
+
+    let buyOrders = await dex.getOrders(REP, SIDE.BUY);
+    let sellOrders = await dex.getOrders(REP, SIDE.SELL);
+    assert(buyOrders.length === 1);
+    const buyOrder = buyOrders[0];
+    assert(buyOrder.trader === trader1);
+    assert(buyOrder.ticker === web3.utils.padRight(REP, 64));
+    assert(buyOrder.price === '10');
+    assert(buyOrder.amount === amount);
+    assert(sellOrders.length === 0);
+
+    await dex.deposit(web3.utils.toWei('200'), DAI, { from: trader2 });
+    await dex.createLimitOrder(REP, amount, 11, SIDE.BUY, { from: trader2 });
+
+    buyOrders = await dex.getOrders(REP, SIDE.BUY);
+    sellOrders = await dex.getOrders(REP, SIDE.SELL);
+    assert(buyOrders.length === 2);
+    assert(buyOrders[0].trader === trader2);
+    assert(buyOrders[1].trader === trader1);
+    assert(sellOrders.length === 0);
+
+    await dex.deposit(web3.utils.toWei('200'), DAI, { from: trader2 });
+    await dex.createLimitOrder(REP, amount, 9, SIDE.BUY, { from: trader2 });
+
+    buyOrders = await dex.getOrders(REP, SIDE.BUY);
+    sellOrders = await dex.getOrders(REP, SIDE.SELL);
+    assert(buyOrders.length === 3);
+    assert(buyOrders[0].trader === trader2);
+    assert(buyOrders[1].trader === trader1);
+    assert(buyOrders[2].trader === trader2);
+    assert(sellOrders.length === 0);
   });
 });
