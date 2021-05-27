@@ -120,13 +120,12 @@ contract Dex {
     if (side == Side.SELL) {
       require(traderBalances[msg.sender][ticker] >= amount, 'token balance too low');
     }
-
     Order[] storage orders = orderBook[ticker][uint(side == Side.BUY ? Side.SELL : Side.BUY)];
     uint i;
-    uint remaining;
+    uint remaining = amount;
 
     while (i < orders.length && remaining > 0) {
-      uint available = orders[i].amount - orders[i].filled;
+      uint available = orders[i].amount.sub(orders[i].filled);
       uint matched = (remaining > available) ? available : remaining;
       remaining = remaining.sub(matched);
       orders[i].filled = orders[i].filled.add(matched);
@@ -155,18 +154,17 @@ contract Dex {
         traderBalances[orders[i].trader][ticker] = traderBalances[orders[i].trader][ticker].sub(matched);
         traderBalances[orders[i].trader][DAI] = traderBalances[orders[i].trader][DAI].add(matched.mul(orders[i].price));
       }
-
-      nextTradeId = nextTradeId.add(1);
-      i = i.add(1);
+      nextTradeId++;
+      i++;
     }
 
     i = 0;
     while (i < orders.length && orders[i].filled == orders[i].amount) {
-      for (uint j = i; j < orders.length - 1; j++) {
+      for(uint j = i; j < orders.length - 1; j++ ) {
         orders[j] = orders[j + 1];
       }
       orders.pop();
-      i = i.add(1);
+      i++;
     }
   }
 
