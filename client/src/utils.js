@@ -18,7 +18,7 @@ const getWeb3 = () => {
         console.log("Injected web3 detected.");
         resolve(web3);
       } else {
-        const provider = new Web3.providers.HttpProvider("http://localhost:7545");
+        const provider = new Web3.providers.HttpProvider("http://localhost:9545");
         const web3 = new Web3(provider);
         console.log("No web3 instance injected, using Local web3.");
         resolve(web3);

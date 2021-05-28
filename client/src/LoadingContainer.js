@@ -4,7 +4,7 @@ import App from './App.js';
 
 function LoadingContainer() {
   const [web3, setWeb3] = useState(undefined);
-  const [accounts, setAccounts] = useState(undefined);
+  const [accounts, setAccounts] = useState([]);
   const [contracts, setContracts] = useState(undefined);
 
   useEffect(() => {
