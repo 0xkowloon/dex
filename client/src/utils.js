@@ -5,10 +5,10 @@ import ERC20Abi from './ERC20Abi.json';
 const getWeb3 = () => {
   return new Promise((resolve, reject) => {
     window.addEventListener("load", async () => {
-      if (window.ethererum) {
-        const web3 = new Web3(window.ethererum);
+      if (window.ethereum) {
+        const web3 = new Web3(window.ethereum);
         try {
-          await window.ethererum.enable();
+          await window.ethereum.enable();
           resolve(web3);
         } catch (error) {
           reject(error);
@@ -18,9 +18,9 @@ const getWeb3 = () => {
         console.log("Injected web3 detected.");
         resolve(web3);
       } else {
-        const provider = new Web3.providers.HttpProvider("http://localhost:9545");
+        const provider = new Web3.providers.HttpProvider("http://localhost:7545");
         const web3 = new Web3(provider);
-        console.log("No web3 instance injected, using local web3.");
+        console.log("No web3 instance injected, using Local web3.");
         resolve(web3);
       }
     });
@@ -28,7 +28,7 @@ const getWeb3 = () => {
 };
 
 const getContracts = async web3 => {
-  const networkId = async web3.eth.net.getId();
+  const networkId = await web3.eth.net.getId();
   const deployedNetwork = Dex.networks[networkId];
   const dex = new web3.eth.Contract(
     Dex.abi,
@@ -43,6 +43,6 @@ const getContracts = async web3 => {
     )
   }), {});
   return { dex, ...tokenContracts };
-}
+};
 
 export { getWeb3, getContracts };
