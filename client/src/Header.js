@@ -15,7 +15,7 @@ function Header({
             items={tokens.map(token => ({
               label: token.ticker,
               value: token,
-            })}
+            }))}
             activeItem={{
               label: user.selectedToken.ticker,
               value: user.selectedToken,
@@ -32,3 +32,5 @@ function Header({
     </header>
   );
 }
+
+export default Header;
